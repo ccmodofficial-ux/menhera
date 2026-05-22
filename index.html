@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深層依存診断 ♡ ヤンデレメンヘラ edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink: #ff2d6e;
+  --pink-soft: #ff7eb3;
+  --pink-pale: #ffd6e7;
+  --lavender: #c084fc;
+  --dark: #0a0510;
+  --card: rgba(255,255,255,0.04);
+  --text: #f0e6f6;
+  --muted: #9b89b0;
+  --border: rgba(255,45,110,0.22);
+  --blood: #8b0030;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', -apple-system, sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E🩷%3C/text%3E%3C/svg%3E") 12 12, auto;
+}
+
+/* ── scanlines overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── noise texture ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.3;
+}
+
+/* ── background effects ── */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.6;
+  animation: orbDrift 12s ease-in-out infinite alternate;
+}
+.orb1 { width: 600px; height: 600px; background: radial-gradient(circle, #7a00ff18, transparent); top: -200px; left: -150px; animation-delay: 0s; }
+.orb2 { width: 500px; height: 500px; background: radial-gradient(circle, #ff2d6e1a, transparent); bottom: -180px; right: -120px; animation-delay: -4s; }
+.orb3 { width: 320px; height: 320px; background: radial-gradient(circle, #f472b61a, transparent); top: 40%; left: 60%; animation-delay: -8s; }
+.orb4 { width: 200px; height: 200px; background: radial-gradient(circle, #ff006630, transparent); top: 20%; right: 10%; animation-delay: -2s; }
+@keyframes orbDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(20px, 30px) scale(1.08); }
+}
+
+/* ── blood drips ── */
+.drip-container {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  justify-content: space-around;
+}
+.drip {
+  width: 3px;
+  background: linear-gradient(#8b003080, #ff2d6e40);
+  border-radius: 0 0 50% 50%;
+  animation: drip linear infinite;
+  opacity: 0;
+}
+@keyframes drip {
+  0%   { height: 0; opacity: 0; }
+  10%  { opacity: 0.6; }
+  80%  { opacity: 0.4; }
+  100% { height: 120px; opacity: 0; }
+}
+
+/* ── floating particles ── */
+#hearts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.heart {
+  position: absolute;
+  bottom: -40px;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  user-select: none;
+}
+@keyframes floatUp {
+  0%   { opacity: 0;   transform: translateY(0)    rotate(0deg)   scale(0.8); }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.3; }
+  100% { opacity: 0;   transform: translateY(-105vh) rotate(25deg) scale(1.1); }
+}
+
+/* ── layout ── */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 660px;
+  margin: auto;
+  padding: 20px 18px 64px;
+}
+
+/* ── header ── */
+.header {
+  text-align: center;
+  padding: 36px 0 28px;
+  animation: fadeDown 0.6s ease;
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.header-deco {
+  font-size: 1.8rem;
+  letter-spacing: 10px;
+  margin-bottom: 10px;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+.title {
+  font-size: 2.4rem;
+  font-weight: 900;
+  background: linear-gradient(120deg, #ff2d6e, #c084fc, #ff7eb3, #ff006680, #ff2d6e);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  text-shadow: 0 0 40px rgba(255,45,110,0.3);
+  letter-spacing: 2px;
+}
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:300%} }
+.title-sub {
+  font-size: 0.72rem;
+  color: rgba(255,45,110,0.7);
+  font-weight: 700;
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.9;
+}
+
+/* ── glitch text ── */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+.glitch::before, .glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  background: linear-gradient(120deg, #ff2d6e, #c084fc, #ff7eb3);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.glitch::before {
+  animation: glitch1 3s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+}
+.glitch::after {
+  animation: glitch2 3s infinite;
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+}
+@keyframes glitch1 {
+  0%, 90%, 100% { transform: translate(0); opacity: 0; }
+  92% { transform: translate(-2px, 1px); opacity: 0.8; }
+  94% { transform: translate(2px, -1px); opacity: 0.6; }
+  96% { transform: translate(-1px, 0); opacity: 0.7; }
+}
+@keyframes glitch2 {
+  0%, 90%, 100% { transform: translate(0); opacity: 0; }
+  93% { transform: translate(2px, 1px); opacity: 0.7; }
+  95% { transform: translate(-2px, -1px); opacity: 0.5; }
+  97% { transform: translate(1px, 0); opacity: 0.6; }
+}
+
+/* ── card ── */
+.card {
+  background: rgba(16,8,28,0.9);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 28px 22px;
+  backdrop-filter: blur(24px);
+  box-shadow: 
+    0 12px 48px rgba(255,45,110,0.08),
+    0 0 0 1px rgba(192,132,252,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 60px rgba(255,45,110,0.04);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,45,110,0.5), rgba(192,132,252,0.5), transparent);
+}
+.card.fading { opacity: 0; transform: translateY(10px); }
+
+/* ── progress ── */
+.prog-wrap { margin-bottom: 26px; }
+.prog-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.prog-label { color: var(--pink-soft); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; }
+.prog-hearts { font-size: 0.85rem; letter-spacing: 3px; opacity: 0.7; }
+.prog-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #8b0030, #ff2d6e, #c084fc, #ff7eb3);
+  background-size: 200%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 14px #ff2d6e80;
+  animation: barShimmer 2s linear infinite;
+}
+@keyframes barShimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+/* ── back button ── */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,45,110,0.08);
+  border: 1px solid rgba(255,45,110,0.2);
+  color: var(--pink-soft);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  letter-spacing: 0.5px;
+}
+.back-btn:hover {
+  background: rgba(255,45,110,0.18);
+  transform: translateX(-3px);
+  box-shadow: 0 0 12px rgba(255,45,110,0.2);
+}
+.back-btn:active { transform: scale(0.95); }
+.back-btn-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* ── question ── */
+.q-wrap { animation: slideIn 0.35s ease; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.q-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(90deg, rgba(255,45,110,0.2), rgba(192,132,252,0.2));
+  border: 1px solid rgba(255,45,110,0.35);
+  color: #ff7eb3;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 12px rgba(255,45,110,0.15);
+}
+.q-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.8;
+  margin-bottom: 22px;
+  color: #f5eaff;
+  text-shadow: 0 0 20px rgba(255,45,110,0.1);
+}
+.answers { display: flex; flex-direction: column; gap: 10px; }
+.ans-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #e0cef5;
+  padding: 15px 18px;
+  border-radius: 18px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, color 0.18s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.ans-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(#ff2d6e, #c084fc);
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 2px 0 0 2px;
+}
+.ans-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,45,110,0.06), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.45s ease;
+}
+.ans-btn:hover {
+  background: rgba(255,45,110,0.1);
+  border-color: rgba(255,45,110,0.45);
+  color: #fff;
+  transform: translateX(5px);
+  box-shadow: 0 4px 20px rgba(255,45,110,0.15);
+}
+.ans-btn:hover::before { opacity: 1; }
+.ans-btn:hover::after { transform: translateX(100%); }
+.ans-btn:active { transform: scale(0.97) translateX(2px); }
+.ans-num {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: rgba(255,45,110,0.18);
+  border: 1px solid rgba(255,45,110,0.35);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--pink-soft);
+  box-shadow: 0 0 8px rgba(255,45,110,0.2);
+}
+
+/* ── start screen ── */
+.start-wrap { text-align: center; padding: 10px 0 6px; animation: slideIn 0.4s ease; }
+.start-big-icon { font-size: 5rem; display: block; margin-bottom: 18px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(255,45,110,0.4)); }
+@keyframes float { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+.start-ttl { font-size: 1.1rem; font-weight: 800; margin-bottom: 14px; color: var(--pink-soft); letter-spacing: 1px; }
+.start-desc {
+  color: var(--muted);
+  font-size: 0.87rem;
+  line-height: 2.1;
+  margin-bottom: 24px;
+  background: rgba(255,45,110,0.04);
+  border-radius: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255,45,110,0.12);
+  text-align: left;
+  position: relative;
+}
+.start-desc::before {
+  content: '♡';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  color: var(--pink);
+  filter: drop-shadow(0 0 6px var(--pink));
+}
+.start-desc span { color: var(--pink-soft); font-weight: 800; }
+.type-preview { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; }
+.type-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 7px 15px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-weight: 700;
+}
+.type-chip:hover {
+  background: rgba(255,45,110,0.12);
+  border-color: rgba(255,45,110,0.45);
+  color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(255,45,110,0.2);
+}
+.type-hint { text-align: center; font-size: 0.73rem; color: var(--muted); margin-bottom: 22px; opacity: 0.7; }
+
+/* ── whisper text ── */
+.whisper {
+  font-size: 0.72rem;
+  color: rgba(255,45,110,0.5);
+  text-align: center;
+  margin-bottom: 10px;
+  font-style: italic;
+  animation: whisperPulse 3s ease-in-out infinite;
+  letter-spacing: 1px;
+}
+@keyframes whisperPulse { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
+
+/* ── modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayIn 0.2s ease;
+}
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+.modal-box {
+  background: #100818;
+  border: 1px solid rgba(255,45,110,0.35);
+  border-radius: 28px 28px 24px 24px;
+  padding: 28px 24px 32px;
+  max-width: 600px;
+  width: 100%;
+  animation: sheetUp 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 -8px 40px rgba(255,45,110,0.15);
+}
+@keyframes sheetUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-icon { font-size: 3.2rem; text-align: center; display: block; margin-bottom: 10px; }
+.modal-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff2d6e, #c084fc);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+.modal-title { font-size: 1.4rem; font-weight: 900; margin-bottom: 14px; }
+.modal-desc { color: #c4b4d8; font-size: 0.87rem; line-height: 2.1; margin-bottom: 22px; }
+.modal-close {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 13px;
+  border-radius: 16px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #d4c0e8;
+  cursor: pointer;
+  background: rgba(255,255,255,0.04);
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.09); }
+
+/* ── buttons ── */
+.btn-primary {
+  width: 100%;
+  border: none;
+  padding: 18px;
+  border-radius: 18px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  background: linear-gradient(135deg, #8b0030, #ff2d6e, #c084fc);
+  background-size: 200%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-position 0.3s;
+  letter-spacing: 2px;
+  box-shadow: 0 6px 24px rgba(255,45,110,0.35);
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: rgba(255,255,255,0.15);
+  transform: skewX(-25deg);
+  transition: left 0.4s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(255,45,110,0.5);
+  background-position: right;
+}
+.btn-primary:hover::after { left: 160%; }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  width: 100%;
+  border: 1px solid rgba(255,45,110,0.2);
+  padding: 14px;
+  border-radius: 18px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #d4c0e8;
+  cursor: pointer;
+  background: rgba(255,45,110,0.05);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+.btn-secondary:hover {
+  background: rgba(255,45,110,0.1);
+  border-color: rgba(255,45,110,0.4);
+  transform: translateY(-2px);
+}
+
+/* ── result ── */
+.res-wrap { animation: fadeUp 0.5s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.res-top { text-align: center; margin-bottom: 22px; position: relative; }
+.res-icon {
+  font-size: 5.5rem;
+  display: block;
+  margin-bottom: 14px;
+  animation: bounceIn 0.7s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  filter: drop-shadow(0 0 30px rgba(255,45,110,0.5));
+}
+@keyframes bounceIn {
+  from { transform: scale(0) rotate(-15deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.res-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #8b0030, #ff2d6e, #c084fc);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 18px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 16px rgba(255,45,110,0.3);
+}
+.res-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ff2d6e, #c084fc, #ff7eb3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0;
+  line-height: 1.3;
+}
+.res-desc {
+  color: #c4b4d8;
+  line-height: 2.1;
+  font-size: 0.9rem;
+  margin-bottom: 26px;
+  background: rgba(255,45,110,0.04);
+  border-radius: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(255,45,110,0.15);
+  position: relative;
+}
+.res-desc::before {
+  content: '🩸';
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+}
+.res-message {
+  font-size: 0.82rem;
+  color: rgba(255,45,110,0.7);
+  text-align: center;
+  font-style: italic;
+  margin: -16px 0 20px;
+  letter-spacing: 1px;
+  animation: whisperPulse 3s ease-in-out infinite;
+}
+.scores-ttl {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+}
+.score-item { margin-bottom: 13px; }
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.score-name { font-size: 0.83rem; color: #d0c0e4; }
+.score-pt { font-size: 0.83rem; font-weight: 700; color: var(--pink-soft); }
+.score-track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.score-fill {
+  height: 100%;
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── decorative corner hearts ── */
+.corner-deco {
+  position: absolute;
+  font-size: 1.1rem;
+  opacity: 0.25;
+  pointer-events: none;
+}
+.corner-deco.tl { top: 14px; left: 16px; }
+.corner-deco.tr { top: 14px; right: 16px; }
+.corner-deco.bl { bottom: 14px; left: 16px; }
+.corner-deco.br { bottom: 14px; right: 16px; }
+
+/* ── ad placeholder ── */
+.ad-area {
+  margin-top: 20px;
+  border: 1px dashed rgba(255,45,110,0.15);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  color: rgba(255,255,255,0.12);
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+}
+
+/* ── mobile ── */
+@media (hover: none) {
+  .ans-btn:hover { transform: none; }
+}
+@media (max-width: 480px) {
+  .title { font-size: 1.9rem; }
+  .q-text { font-size: 1.08rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+<div id="hearts"></div>
+<div class="drip-container" id="drips"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="header-deco">🩹🩷💊🎀💉🩷🩹</div>
+    <h1 class="title glitch" data-text="深層依存診断">深層依存診断</h1>
+    <div class="title-sub">─ YANDERE × MENHERA EDITION ─</div>
+    <p class="subtitle">あなたの愛着・依存・執着のパターンを解析します<br>正直に答えてね♡ うそついたらわかるんだから</p>
+  </div>
+
+  <div class="card" id="app">
+    <span class="corner-deco tl">♡</span>
+    <span class="corner-deco tr">🩷</span>
+    <span class="corner-deco bl">💊</span>
+    <span class="corner-deco br">♡</span>
+  </div>
+
+  <div class="ad-area">💊 広告・BOOTHリンク設置エリア 🩹</div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  DATA — 16 QUESTIONS WITH BRANCHING
+// ════════════════════════════════════════
+
+const QUESTIONS = [
+  // Q1
+  {
+    q: "好きな人から返信が来ない時は？",
+    emoji: "📱",
+    answers: [
+      { text: "不安でずっとスマホを確認してしまう…もしかして嫌われた？",     t:"men", p:4 },
+      { text: "今すぐ既読確認したい。何してるか全部知りたい",               t:"yan", p:4 },
+      { text: "少し待てるけど内心じわじわモヤモヤする",                     t:"tsu", p:3 },
+      { text: "まあいっかって放置できる",                                   t:"rei", p:4 },
+      { text: "心配で先に連絡してしまう。元気かな？",                       t:"jyu", p:3 },
+    ]
+  },
+  // Q2
+  {
+    q: "理想の恋愛関係は？",
+    emoji: "💑",
+    answers: [
+      { text: "お互いに独占し合えて、他は誰もいらない関係",                 t:"yan", p:4 },
+      { text: "四六時中一緒にいたい。離れると不安になる",                   t:"men", p:3 },
+      { text: "自由だけどちゃんと愛し合う、信頼のある関係",                 t:"rei", p:4 },
+      { text: "安心感と信頼で支え合える安定した関係",                       t:"sta", p:4 },
+      { text: "相手のために何でもできる純粋な溺愛関係",                     t:"jyu", p:3 },
+    ]
+  },
+  // Q3
+  {
+    q: "恋人が異性の友達と二人で遊びに行ったら？",
+    emoji: "😤",
+    answers: [
+      { text: "位置情報確認したい。SNSのストーリーも全部チェックする",       t:"yan", p:5 },
+      { text: "不安で泣いてしまうかも。捨てられるかもって考えてしまう",     t:"men", p:4 },
+      { text: "嫉妬するけど信じるしかないって言い聞かせる",                 t:"sta", p:3 },
+      { text: "全然気にならない、各自自由でいい",                           t:"rei", p:4 },
+      { text: "感情的になってつい冷たくしてしまう",                         t:"tsu", p:3 },
+    ]
+  },
+  // Q4
+  {
+    q: "深夜に一人でいる時、考えやすいことは？",
+    emoji: "🌙",
+    answers: [
+      { text: "本当に愛されてるのかな…私って必要とされてる？",               t:"men", p:5 },
+      { text: "今頃あの人は何してるんだろ。誰かといる？",                   t:"yan", p:4 },
+      { text: "無になれる、頭を空っぽにできる時間",                         t:"rei", p:4 },
+      { text: "将来とか夢とか、自分のことを考える",                         t:"sta", p:3 },
+      { text: "大切な人への気持ちが溢れてきて幸せな気分",                   t:"jyu", p:3 },
+    ]
+  },
+  // Q5
+  {
+    q: "恋愛で一番怖いことは？",
+    emoji: "😨",
+    answers: [
+      { text: "捨てられること。必要とされなくなること",                     t:"men", p:5 },
+      { text: "浮気・裏切られること。あの人が他の人に笑いかけること",       t:"yan", p:5 },
+      { text: "束縛されて自由を奪われること",                               t:"rei", p:4 },
+      { text: "すれ違いがずっと続いて、分かり合えなくなること",             t:"sta", p:3 },
+      { text: "自分の気持ちが正しく伝わらないこと",                         t:"jyu", p:3 },
+    ]
+  },
+  // Q6
+  {
+    q: "好きな人に「あなたのこと好き」と言われた時は？",
+    emoji: "🫶",
+    answers: [
+      { text: "本当に？嘘じゃない？何度も確認してしまう",                   t:"men", p:5 },
+      { text: "嬉しいけど、本当かな…？裏切られたら怖いって思う",           t:"yan", p:3 },
+      { text: "照れて素直に返せなくて、ぶっきらぼうになる",                 t:"tsu", p:5 },
+      { text: "素直に喜んで、同じ気持ちを伝え返す",                         t:"sta", p:4 },
+      { text: "涙が出そうなくらい幸せになる。世界が輝いて見える",           t:"jyu", p:4 },
+    ]
+  },
+  // Q7
+  {
+    q: "恋人から「少し距離を置きたい」と言われたら？",
+    emoji: "💔",
+    answers: [
+      { text: "パニックになって泣きながら引き止める。消えたくなる",         t:"men", p:5 },
+      { text: "絶対に嫌。理由を問い詰めて、認めない",                       t:"yan", p:5 },
+      { text: "傷つくけど表には出さないように必死に堪える",                 t:"tsu", p:3 },
+      { text: "気持ちを整理して冷静に話し合いたい",                         t:"sta", p:4 },
+      { text: "辛いけど、相手の気持ちを尊重して待てる",                     t:"jyu", p:3 },
+    ]
+  },
+  // Q8
+  {
+    q: "好きな人の過去の恋愛を知ったら？",
+    emoji: "🕵️",
+    answers: [
+      { text: "嫉妬して頭から離れない。元カノの情報を調べてしまう",         t:"yan", p:5 },
+      { text: "元カノと自分を比べて落ち込む。私じゃダメなの？",             t:"men", p:4 },
+      { text: "あまり気にならない。過去は過去でしょ",                       t:"rei", p:4 },
+      { text: "興味はあるけど受け入れられる。過去があって今がある",         t:"sta", p:3 },
+      { text: "話してくれたこと自体が嬉しい。信頼されてるんだって",         t:"jyu", p:3 },
+    ]
+  },
+  // Q9
+  {
+    q: "好きな人のSNSをどのくらい確認する？",
+    emoji: "📲",
+    answers: [
+      { text: "毎日何度も。いいねした人まで全員チェックする",               t:"yan", p:5 },
+      { text: "頻繁に見る。見ないと不安で落ち着かない",                     t:"men", p:4 },
+      { text: "好きな時だけ、気が向いた時に",                               t:"rei", p:4 },
+      { text: "たまに更新があれば見る程度",                                 t:"sta", p:3 },
+      { text: "好きすぎてついつい見てしまう。愛しいな〜",                   t:"jyu", p:3 },
+    ]
+  },
+  // Q10
+  {
+    q: "一人の時間はどう感じる？",
+    emoji: "🪞",
+    answers: [
+      { text: "孤独で怖い。誰かにそばにいてほしい",                         t:"men", p:4 },
+      { text: "その人のことが気になりっぱなしで落ち着かない",               t:"yan", p:3 },
+      { text: "大事な充電時間。自分を整えられる",                           t:"rei", p:5 },
+      { text: "適度に必要だと思ってる。バランスが大事",                     t:"sta", p:4 },
+      { text: "好きな人のことを想って幸せな気持ちになれる",                 t:"jyu", p:3 },
+    ]
+  },
+  // Q11
+  {
+    q: "友達に「ちょっと重い」と言われたことある？",
+    emoji: "⚖️",
+    answers: [
+      { text: "よく言われる…でも愛してるから仕方ない",                     t:"yan", p:4 },
+      { text: "たまに言われる。重くなりたくないのに止められない",           t:"men", p:4 },
+      { text: "逆に「冷たい」「ドライ」ってよく言われる",                   t:"rei", p:5 },
+      { text: "ほぼ言われない。バランス取れてる方だと思う",                 t:"sta", p:3 },
+      { text: "「愛が深すぎる」とは言われる。愛なんだけどな",               t:"jyu", p:4 },
+    ]
+  },
+  // Q12
+  {
+    q: "あなたの愛情表現といえば？",
+    emoji: "💌",
+    answers: [
+      { text: "毎日こまめに連絡して、相手の行動を把握しておきたい",         t:"yan", p:4 },
+      { text: "感情を全部ぶつけてしまう。抑えられない",                     t:"men", p:4 },
+      { text: "言葉より行動。気づかれなくてもそっとしてあげる",             t:"tsu", p:5 },
+      { text: "言葉と行動のバランスよく、自然体で",                         t:"sta", p:3 },
+      { text: "とにかく全力で惜しみなく表現する。伝えたい気持ちが溢れる",   t:"jyu", p:4 },
+    ]
+  },
+  // Q13
+  {
+    q: "恋をしている時の自分の状態は？",
+    emoji: "🌸",
+    answers: [
+      { text: "感情の波が激しすぎて、毎日消耗してしまう",                   t:"men", p:5 },
+      { text: "その人のことしか考えられなくなる。頭の中が占領される",       t:"yan", p:5 },
+      { text: "恋愛しても自分のペースを保てる。冷静でいられる",             t:"rei", p:5 },
+      { text: "幸せだけど冷静さも忘れない。二人で成長できてる",             t:"sta", p:4 },
+      { text: "世界が輝いて見えるほど幸せ。生きてる実感がある",             t:"jyu", p:4 },
+    ]
+  },
+  // Q14
+  {
+    q: "相手が連絡なしに帰りが遅くなったら？",
+    emoji: "🕐",
+    answers: [
+      { text: "会社・最寄り駅まで迎えに行く。確認したい",                   t:"yan", p:5 },
+      { text: "最悪の想像が止まらなくて泣いてしまう",                       t:"men", p:5 },
+      { text: "心配だけど過剰に反応しないよう自分を抑える",                 t:"tsu", p:3 },
+      { text: "何かあったのかな？と思って一度だけ連絡する",                 t:"sta", p:3 },
+      { text: "ちゃんと帰ってきてね、待ってるよって伝える",                 t:"jyu", p:3 },
+    ]
+  },
+  // Q15
+  {
+    q: "別れた後、あなたはどうなりそう？",
+    emoji: "🥀",
+    answers: [
+      { text: "絶対に別れない。別れるくらいなら…って考えてしまう",         t:"yan", p:5 },
+      { text: "自分が壊れそう。立ち直れる気がしない",                       t:"men", p:5 },
+      { text: "悲しいけど、時間が解決してくれると思う",                     t:"rei", p:4 },
+      { text: "泣くけど、ちゃんと前に進める。経験として受け入れる",         t:"sta", p:4 },
+      { text: "ずっと好きでいる。でも相手の幸せを願える",                   t:"jyu", p:4 },
+    ]
+  },
+  // Q16
+  {
+    q: "あなたにとって「愛」とは？",
+    emoji: "💗",
+    answers: [
+      { text: "その人だけを完全に所有すること。他に渡さない",               t:"yan", p:5 },
+      { text: "誰かに必要とされること。一人じゃ生きていけない",             t:"men", p:5 },
+      { text: "依存せずにお互いを尊重し合える自由なもの",                   t:"rei", p:5 },
+      { text: "信頼と安心感の上に育つ、穏やかで確かなもの",                 t:"sta", p:5 },
+      { text: "自分の全てを捧げても惜しくない、命がけのもの",               t:"jyu", p:5 },
+    ]
+  },
+];
+
+const TYPES = {
+  yan: {
+    icon: "🔪",
+    tag: "ヤンデレ型",
+    title: "監視・束縛型ヤンデレ",
+    color: "#ff2d6e",
+    glow: "rgba(255,45,110,0.35)",
+    message: "「あなたは…ぜったいに逃がさないから」",
+    desc: "あなたは愛情と独占欲が深く結びついているタイプです。「この人を絶対に失いたくない」という気持ちが人一倍強く、それが時に監視や束縛という行動につながってしまいます。嫉妬心や支配欲の裏には、本物の深い愛情がある。あなたの愛を、ちゃんと受け取ってくれる人が必ずいます。信頼を少しずつ積み上げていけば、愛はもっと穏やかに輝けるはず♡"
+  },
+  men: {
+    icon: "🩹",
+    tag: "メンヘラ型",
+    title: "共依存・感情過多メンヘラ",
+    color: "#f472b6",
+    glow: "rgba(244,114,182,0.35)",
+    message: "「ねえ…本当に私のこと好き？もう一回言って？」",
+    desc: "あなたは感情がとても豊かで、誰よりも深く人を愛せるタイプです。孤独や不安を感じやすく、「ちゃんと愛されているのかな？」と何度も確認したくなることがあります。その繊細さは弱さじゃない。人の気持ちを誰より深く理解できるあなただけの才能です。自分を大切にすることが、一番の愛への近道になるよ♡"
+  },
+  rei: {
+    icon: "🧊",
+    tag: "回避型",
+    title: "感情遮断・回避型",
+    color: "#818cf8",
+    glow: "rgba(129,140,248,0.35)",
+    message: "「…別に、好きとか嫌いとか、そういうんじゃないし」",
+    desc: "あなたは感情を抑制して、適度な距離感を保つタイプです。冷静でクールに見えますが、それは過去の何かから自分を守るための鎧かもしれません。内側には誰より繊細な感情がある。あなたが心を閉じる理由を、丁寧に解いてくれる人がきっといる。少しずつでも、信頼できる誰かに心を開いてみて♡"
+  },
+  sta: {
+    icon: "🌿",
+    tag: "安定型",
+    title: "安定愛着・バランス型",
+    color: "#34d399",
+    glow: "rgba(52,211,153,0.35)",
+    message: "「一緒にいると、なんか落ち着くね」",
+    desc: "あなたは感情と理性のバランスが取れた、健全な愛着スタイルを持っています。相手を信頼しながらも自分を大切にでき、理想的な恋愛ができるタイプ。あなたのそばにいると安心できると言われることが多いのでは？その穏やかさと誠実さは、本物の宝物です♡"
+  },
+  tsu: {
+    icon: "🥀",
+    tag: "ツンデレ型",
+    title: "防衛・ツンデレ型",
+    color: "#fb923c",
+    glow: "rgba(251,146,60,0.35)",
+    message: "「べ、別にあなたのことが心配だったわけじゃないし！」",
+    desc: "あなたは本当は深く感じているのに、それを素直に表現できないタイプです。傷つくことへの恐怖から感情を隠してしまう。でも時々あふれ出す「デレ」の瞬間が、周りには何より愛しく映ってるはずです。素直にならなくていい、そのままのあなたが魅力的だよ♡ たまに見せてくれる本音が、誰かの心を溶かしてる。"
+  },
+  jyu: {
+    icon: "🌹",
+    tag: "溺愛型",
+    title: "純愛・溺愛型",
+    color: "#f9a8d4",
+    glow: "rgba(249,168,212,0.35)",
+    message: "「あなたのためなら、なんでもできる。本当に」",
+    desc: "あなたは愛することに全力を注ぐ、純粋で情熱的なタイプです。大切な人のために何でもしてあげたいという気持ちが強く、愛情表現も惜しみません。その純粋さは眩しいほどの魅力。でも自分自身を大切にすることも忘れないで。あなたの幸せがあってこそ、相手も本当に幸せになれるから♡"
+  }
+};
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+
+let phase = "start";
+let currentQ = 0;
+let scores = { yan:0, men:0, rei:0, sta:0, tsu:0, jyu:0 };
+let history = []; // { qIndex, scores_before }
+
+const app = document.getElementById("app");
+
+// ════════════════════════════════════════
+//  RENDER HELPERS
+// ════════════════════════════════════════
+
+function transition(cb, direction = 1) {
+  app.classList.add("fading");
+  setTimeout(() => {
+    cb();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      app.classList.remove("fading");
+    }));
+  }, 180);
+}
+
+// ════════════════════════════════════════
+//  SCREENS
+// ════════════════════════════════════════
+
+function renderStart() {
+  const typeChips = Object.entries(TYPES)
+    .map(([key, t]) => `<button class="type-chip" onclick="showTypeModal('${key}')">${t.icon} ${t.tag}</button>`)
+    .join("");
+
+  app.innerHTML = `
+    <span class="corner-deco tl">♡</span>
+    <span class="corner-deco tr">🩷</span>
+    <span class="corner-deco bl">💊</span>
+    <span class="corner-deco br">♡</span>
+    <div class="start-wrap">
+      <span class="start-big-icon">🩷</span>
+      <div class="start-ttl">深層依存診断へようこそ♡</div>
+      <div class="start-desc">
+        <span>全16問・5択</span>の質問に正直に答えてね。<br>
+        あなたの愛着スタイルと依存パターンを<span>6タイプ</span>から診断します。<br>
+        嘘ついたってわかるんだから。<span>本音</span>で答えてね♡<br>
+        <span>←戻るボタン</span>で回答を変えることもできるよ。
+      </div>
+      <div class="type-preview">${typeChips}</div>
+      <div class="type-hint">↑ タップするとタイプの説明が見られるよ♡</div>
+      <div class="whisper">〜 あなたのこと、全部知りたい 〜</div>
+      <button class="btn-primary" onclick="startQuiz()">🩷 診断スタート 🩷</button>
+    </div>
+  `;
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const pct = (currentQ / QUESTIONS.length) * 100;
+  const total = QUESTIONS.length;
+  const filled = Math.round((currentQ / total) * 7);
+  const heartsStr = "♥".repeat(filled) + "♡".repeat(7 - filled);
+
+  const answerBtns = q.answers.map((a, i) => `
+    <button class="ans-btn" onclick="selectAnswer(${i})">
+      <span class="ans-num">${i + 1}</span>
+      ${a.text}
+    </button>
+  `).join("");
+
+  const showBack = currentQ > 0;
+  const backHtml = showBack
+    ? `<button class="back-btn" onclick="goBack()">← もどる</button>`
+    : `<div></div>`;
+
+  app.innerHTML = `
+    <span class="corner-deco tl">♡</span>
+    <span class="corner-deco tr">🩷</span>
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span class="prog-label">Q${currentQ + 1} / ${total}</span>
+        <span class="prog-hearts">${heartsStr}</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-bar" style="width:${pct}%"></div>
+      </div>
+    </div>
+    <div class="back-btn-wrap">
+      ${backHtml}
+      <span style="font-size:0.75rem;color:rgba(255,45,110,0.5);font-style:italic;">${q.emoji}</span>
+    </div>
+    <div class="q-wrap">
+      <div class="q-tag">🩷&nbsp; 質問 ${currentQ + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="answers">${answerBtns}</div>
+    </div>
+  `;
+}
+
+function renderResult() {
+  const topKey = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const res = TYPES[topKey];
+  const maxScore = Math.max(...Object.values(scores));
+
+  const scoreBars = Object.entries(scores)
+    .sort((a,b) => b[1]-a[1])
+    .map(([key, val]) => {
+      const t = TYPES[key];
+      const pct = maxScore > 0 ? Math.round((val / maxScore) * 100) : 0;
+      const isTop = key === topKey;
+      return `
+        <div class="score-item">
+          <div class="score-row">
+            <span class="score-name" style="${isTop ? 'color:#fff;font-weight:800;' : ''}">${t.icon} ${t.tag}</span>
+            <span class="score-pt">${val}pt</span>
+          </div>
+          <div class="score-track">
+            <div class="score-fill" data-pct="${pct}" style="background:${t.color};box-shadow:0 0 8px ${t.glow};"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  app.innerHTML = `
+    <div class="res-wrap">
+      <div class="res-top">
+        <span class="res-icon">${res.icon}</span>
+        <div class="res-tag">${res.tag}</div>
+        <div class="res-title">${res.title}</div>
+      </div>
+      <div class="res-message">${res.message}</div>
+      <div class="res-desc">${res.desc}</div>
+      <div class="scores-ttl">── スコア詳細 ──</div>
+      ${scoreBars}
+      <br>
+      <button class="btn-primary" onclick="restartQuiz()">🔄 もう一度診断する</button>
+      <button class="btn-secondary" onclick="shareResult()">🩷 結果をシェアする</button>
+    </div>
+  `;
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll(".score-fill").forEach(el => {
+      el.style.width = el.dataset.pct + "%";
+      el.style.transition = "width 0.9s cubic-bezier(0.4,0,0.2,1)";
+    });
+  }));
+}
+
+// ════════════════════════════════════════
+//  ACTIONS
+// ════════════════════════════════════════
+
+function startQuiz() {
+  transition(() => {
+    phase = "quiz";
+    currentQ = 0;
+    scores = { yan:0, men:0, rei:0, sta:0, tsu:0, jyu:0 };
+    history = [];
+    renderQuestion();
+  });
+}
+
+function selectAnswer(i) {
+  const a = QUESTIONS[currentQ].answers[i];
+
+  // save history snapshot before applying
+  history.push({
+    qIndex: currentQ,
+    scoresBefore: { ...scores },
+    chosenI: i
+  });
+
+  scores[a.t] += a.p;
+  currentQ++;
+
+  transition(() => {
+    if (currentQ >= QUESTIONS.length) {
+      phase = "result";
+      renderResult();
+    } else {
+      renderQuestion();
+    }
+  });
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  const snap = history.pop();
+  scores = { ...snap.scoresBefore };
+  currentQ = snap.qIndex;
+
+  transition(() => {
+    renderQuestion();
+  });
+}
+
+function restartQuiz() {
+  transition(() => {
+    scores = { yan:0, men:0, rei:0, sta:0, tsu:0, jyu:0 };
+    history = [];
+    phase = "start";
+    renderStart();
+  });
+}
+
+function shareResult() {
+  const topKey = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const res = TYPES[topKey];
+  const text = `深層依存診断の結果は…\n${res.icon}「${res.title}」でした！\n${res.message}\nあなたも診断してみてね♡`;
+  if (navigator.share) {
+    navigator.share({ title: "深層依存診断", text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert("結果をコピーしました♡\n好きな人に送ってみてね"));
+  }
+}
+
+// ════════════════════════════════════════
+//  FLOATING PARTICLES
+// ════════════════════════════════════════
+
+(function spawnHearts() {
+  const container = document.getElementById("hearts");
+  const glyphs = ["💗","💓","💕","🩷","♡","💞","💫","🌸","🩹","💊","🥀","🔪"];
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement("div");
+    el.className = "heart";
+    el.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    el.style.left = (Math.random() * 100) + "vw";
+    el.style.fontSize = (10 + Math.random() * 13) + "px";
+    const dur = 10 + Math.random() * 16;
+    el.style.animationDuration = dur + "s";
+    el.style.animationDelay = (Math.random() * dur) + "s";
+    container.appendChild(el);
+  }
+})();
+
+// ════════════════════════════════════════
+//  BLOOD DRIPS
+// ════════════════════════════════════════
+
+(function spawnDrips() {
+  const container = document.getElementById("drips");
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement("div");
+    el.className = "drip";
+    el.style.marginLeft = (4 + Math.random() * 8) + "vw";
+    const dur = 5 + Math.random() * 10;
+    el.style.animationDuration = dur + "s";
+    el.style.animationDelay = (Math.random() * dur) + "s";
+    el.style.opacity = 0.3 + Math.random() * 0.3;
+    container.appendChild(el);
+  }
+})();
+
+// ════════════════════════════════════════
+//  TYPE PREVIEW MODAL
+// ════════════════════════════════════════
+
+function showTypeModal(key) {
+  const t = TYPES[key];
+  const existing = document.getElementById("typeModal");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.id = "typeModal";
+  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <span class="modal-icon">${t.icon}</span>
+      <div style="text-align:center">
+        <div class="modal-tag">${t.tag}</div>
+        <div class="modal-title" style="background:linear-gradient(135deg,${t.color},#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          ${t.title}
+        </div>
+      </div>
+      <div style="text-align:center;font-size:0.78rem;color:${t.color};font-style:italic;margin:-8px 0 14px;opacity:0.85;">${t.message}</div>
+      <div class="modal-desc">${t.desc}</div>
+      <button class="modal-close" onclick="closeModal()">✕ 閉じる</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  const modal = document.getElementById("typeModal");
+  if (modal) {
+    modal.style.opacity = "0";
+    modal.style.transition = "opacity 0.18s ease";
+    setTimeout(() => modal.remove(), 180);
+  }
+}
+
+// ════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════
+renderStart();
+</script>
+</body>
+</html>
