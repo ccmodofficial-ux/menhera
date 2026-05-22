@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー｜深層依存診断</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink: #ff2d6e;
+  --pink-soft: #ff7eb3;
+  --lavender: #c084fc;
+  --dark: #0a0510;
+  --text: #f0e6f6;
+  --muted: #9b89b0;
+  --border: rgba(255,45,110,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.9;
+}
+.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; }
+.orb1 { width: 500px; height: 500px; background: radial-gradient(circle, #7a00ff18, transparent); top: -150px; left: -100px; }
+.orb2 { width: 400px; height: 400px; background: radial-gradient(circle, #ff2d6e18, transparent); bottom: -100px; right: -80px; }
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: auto;
+  padding: 40px 20px 80px;
+}
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.site-name {
+  font-size: 0.8rem;
+  color: var(--pink-soft);
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+.page-title {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(120deg, #ff2d6e, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.updated {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.card {
+  background: rgba(16,8,28,0.85);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  backdrop-filter: blur(20px);
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(255,45,110,0.06);
+}
+.card::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,45,110,0.4), transparent);
+  margin-bottom: 24px;
+}
+h2 {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--pink-soft);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h2::before {
+  content: '♡';
+  font-size: 0.9rem;
+  color: var(--pink);
+}
+p {
+  font-size: 0.9rem;
+  color: #c4b4d8;
+  margin-bottom: 10px;
+}
+ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+ul li {
+  font-size: 0.9rem;
+  color: #c4b4d8;
+  padding: 4px 0 4px 18px;
+  position: relative;
+}
+ul li::before {
+  content: '🩷';
+  position: absolute;
+  left: 0;
+  font-size: 0.75rem;
+}
+a { color: var(--pink-soft); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 30px;
+  background: rgba(255,45,110,0.1);
+  border: 1px solid rgba(255,45,110,0.25);
+  color: var(--pink-soft);
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+.back-link:hover { background: rgba(255,45,110,0.2); text-decoration: none; }
+.footer-note {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
+
+<div class="container">
+  <div class="header">
+    <div class="site-name">深層依存診断</div>
+    <h1 class="page-title">プライバシーポリシー</h1>
+    <div class="updated">最終更新日：2026年5月22日</div>
+  </div>
+
+  <div class="card">
+    <h2>基本方針</h2>
+    <p>Vipers（以下「当サイト運営者」）は、深層依存診断（https://ccmodofficial-ux.github.io/menhera/）において、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。本ポリシーは当サイトにおける個人情報の取り扱いについて説明するものです。</p>
+  </div>
+
+  <div class="card">
+    <h2>収集する情報について</h2>
+    <p>当サイトは、診断ツールの性質上、ユーザーの回答内容をサーバーに送信・保存しません。診断結果はすべてお使いのブラウザ上でのみ処理されます。</p>
+    <p>ただし、以下の情報が自動的に収集される場合があります。</p>
+    <ul>
+      <li>アクセスログ（IPアドレス、ブラウザの種類、アクセス日時など）</li>
+      <li>Google Analytics による利用状況データ（匿名）</li>
+      <li>Google AdSense による広告配信に関するデータ</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Cookieの使用について</h2>
+    <p>当サイトでは、Google Analytics および Google AdSense の利用にあたり、Cookieを使用することがあります。Cookieはブラウザの設定から無効化することが可能です。</p>
+    <p>Cookieを無効化した場合でも、当サイトの診断機能はご利用いただけます。</p>
+  </div>
+
+  <div class="card">
+    <h2>Google Analytics について</h2>
+    <p>当サイトでは、サービス改善のためGoogle Analytics（Googleが提供するアクセス解析ツール）を使用することがあります。Google Analyticsはデータの収集のためにCookieを使用しますが、このデータは匿名で収集されており、個人を特定するものではありません。</p>
+    <p>Google のプライバシーポリシーについては <a href="https://policies.google.com/privacy" target="_blank">こちら</a> をご覧ください。</p>
+  </div>
+
+  <div class="card">
+    <h2>Google AdSense について</h2>
+    <p>当サイトでは、Google AdSense を使用して広告を配信する場合があります。Google AdSense は、ユーザーの興味に応じた広告を表示するために Cookie を使用することがあります。</p>
+    <p>広告のパーソナライズを無効にしたい場合は、<a href="https://adssettings.google.com" target="_blank">Google 広告設定</a> からオプトアウトできます。</p>
+  </div>
+
+  <div class="card">
+    <h2>第三者への情報提供</h2>
+    <p>当サイト運営者は、法令に基づく場合を除き、ユーザーの個人情報を第三者に提供・開示することはありません。</p>
+  </div>
+
+  <div class="card">
+    <h2>免責事項</h2>
+    <p>当サイトの診断結果はエンターテインメントを目的としたものであり、医学的・心理学的な診断ではありません。診断結果についていかなる保証もいたしかねます。</p>
+    <p>当サイトからリンクされた外部サイトの内容について、当サイト運営者は責任を負いません。</p>
+  </div>
+
+  <div class="card">
+    <h2>プライバシーポリシーの変更</h2>
+    <p>本ポリシーの内容は、必要に応じて変更することがあります。変更後のポリシーは本ページに掲載した時点から効力を生じるものとします。</p>
+  </div>
+
+  <div class="card">
+    <h2>お問い合わせ</h2>
+    <p>本ポリシーに関するお問い合わせは、X（旧Twitter）のDMよりご連絡ください。</p>
+  </div>
+
+  <div style="text-align:center;">
+    <a class="back-link" href="index.html">← 診断に戻る</a>
+  </div>
+
+  <div class="footer-note">
+    © 2026 Vipers / 深層依存診断
+  </div>
+</div>
+
+</body>
+</html>
